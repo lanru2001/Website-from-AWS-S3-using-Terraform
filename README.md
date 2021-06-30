@@ -1,3 +1,6 @@
+![image](https://user-images.githubusercontent.com/59709429/124031409-e42a7980-d9bc-11eb-8ad5-c5fc8feebdda.png)
+
+
 
 Explanation of the Infrastructure diagram:
 
