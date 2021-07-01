@@ -1,5 +1,5 @@
-resource "aws_s3_bucket" "b" {
-  bucket = "s3-website-test.hashicorp.com"
+resource "aws_s3_bucket" "my_website" {
+  bucket = "s3-website-app"
   acl    = "public-read"
   policy = file("policy.json")
 
@@ -31,13 +31,13 @@ EOF
   }
   
   tags = {
-    Name = "My bucket"
+    Name = "website_bucket"
   }  
   
 }
 
-resource "aws_iam_role" "replication" {
-  name = "tf-iam-role-replication-12345"
+resource "aws_iam_role" "s3_website_role" {
+  name = "tf-iam-role-website-policy"
 
   assume_role_policy = <<POLICY
 {
@@ -67,11 +67,12 @@ resource "aws_iam_policy" "s3_policy" {
       "Action": [
         "s3:GetObject",
         "s3:ListBucket",
-        "s3:*",        
+        "s3:*",  
+        "s3:PutObject"
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_s3_bucket.source.arn}"
+        "${aws_s3_bucket.my_website.arn}"
       ]
     }
   ]
@@ -80,8 +81,8 @@ POLICY
 }
 
 resource "aws_iam_role_policy_attachment" "s3_attachment" {
-  role       = aws_iam_role.replication.name
-  policy_arn = aws_iam_policy.replication.arn
+  role       = aws_iam_role.s3_website_role.name
+  policy_arn = aws_iam_policy.s3_policy.arn
 }
 
 resource "aws_s3_bucket" "log_bucket" {
@@ -91,7 +92,7 @@ resource "aws_s3_bucket" "log_bucket" {
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-    domain_name = aws_s3_bucket.b.bucket_regional_domain_name
+    domain_name = aws_s3_bucket.my_website.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
 
     s3_origin_config {
@@ -106,7 +107,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   logging_config {
     include_cookies = false
-    bucket          = "mylogs.s3.amazonaws.com"
+    bucket          = "my-tf-log-bucket"
     prefix          = "myprefix"
   }
 
@@ -194,13 +195,13 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 }
 
-data "aws_route53_zone" "example_org" {
-  name         = "example.org"
+data "aws_route53_zone" "dynamic_com" {
+  name         = "dynamic_com"
   private_zone = false
 }
 
-resource "aws_route53_record" "www-dev" {
-  zone_id = aws_route53_zone.primary.zone_id
+resource "aws_route53_record" "dynamic_dev" {
+  zone_id = aws_route53_zone.dynamic.zone_id
   name    = "www"
   type    = "CNAME"
   ttl     = "5"
@@ -210,7 +211,7 @@ resource "aws_route53_record" "www-dev" {
   }
 
   set_identifier = "dev"
-  records        = ["dev.example.com"]
+  records        = ["dynamicitconsulting.com"]
 }
   allow_overwrite = true
   name            = each.value.name
