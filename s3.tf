@@ -17,7 +17,7 @@ resource "aws_s3_bucket" "my_website" {
     }
 }]
 EOF
-  }
+}
     
   logging {
     target_bucket = aws_s3_bucket.log_bucket.id
@@ -35,6 +35,7 @@ EOF
   }  
   
 }
+
 
 resource "aws_iam_role" "s3_website_role" {
   name = "tf-iam-role-website-policy"
@@ -55,6 +56,7 @@ resource "aws_iam_role" "s3_website_role" {
 }
 POLICY
 }
+
 
 resource "aws_iam_policy" "s3_policy" {
   name = "tf-iam-role-policy"
@@ -80,15 +82,18 @@ resource "aws_iam_policy" "s3_policy" {
 POLICY
 }
 
+
 resource "aws_iam_role_policy_attachment" "s3_attachment" {
   role       = aws_iam_role.s3_website_role.name
   policy_arn = aws_iam_policy.s3_policy.arn
 }
 
+
 resource "aws_s3_bucket" "log_bucket" {
   bucket = "my-tf-log-bucket"
   acl    = "log-delivery-write"
 }
+
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
@@ -132,6 +137,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     max_ttl                = 86400
   }
 
+  
   # Cache behavior with precedence 0
   ordered_cache_behavior {
     path_pattern     = "/content/immutable/*"
@@ -200,6 +206,7 @@ data "aws_route53_zone" "dynamic_com" {
   private_zone = false
 }
 
+
 resource "aws_route53_record" "dynamic_dev" {
   zone_id = aws_route53_zone.dynamic.zone_id
   name    = "www"
@@ -221,11 +228,13 @@ resource "aws_route53_record" "dynamic_dev" {
   zone_id         = each.value.zone_id
 }
 
+
 resource "aws_acm_certificate" "example" {
   domain_name       = "example.com"
   validation_method = "DNS"
 }
   
+
 resource "aws_acm_certificate_validation" "example" {
   certificate_arn         = aws_acm_certificate.example.arn
   validation_record_fqdns = [for record in aws_route53_record.example : record.fqdn]
