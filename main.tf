@@ -116,7 +116,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     prefix          = "myprefix"
   }
 
-  aliases = ["mysite.example.com", "yoursite.example.com"]
+  aliases = ["mysite.example.com", "azeeztemitopeola.example.com"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -136,7 +136,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     default_ttl            = 3600
     max_ttl                = 86400
   }
-
   
   # Cache behavior with precedence 0
   ordered_cache_behavior {
@@ -201,6 +200,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 }
 
+
 data "aws_route53_zone" "dynamic_com" {
   name         = "dynamic_com"
   private_zone = false
@@ -229,14 +229,14 @@ resource "aws_route53_record" "dynamic_dev" {
 }
 
 
-resource "aws_acm_certificate" "example" {
+resource "aws_acm_certificate" "web" {
   domain_name       = "example.com"
   validation_method = "DNS"
 }
   
 
-resource "aws_acm_certificate_validation" "example" {
-  certificate_arn         = aws_acm_certificate.example.arn
+resource "aws_acm_certificate_validation" "web" {
+  certificate_arn         = aws_acm_certificate.web.arn
   validation_record_fqdns = [for record in aws_route53_record.example : record.fqdn]
 }
 
